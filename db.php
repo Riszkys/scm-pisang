@@ -1,3 +1,3 @@
 <?php
 
-$conn = new mysqli("localhost", "root", "", "db_pisang");
+$conn = new mysqli("localhost", "root", "", "db_pisang2");

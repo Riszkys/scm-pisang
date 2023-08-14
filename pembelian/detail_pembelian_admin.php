@@ -16,9 +16,10 @@ if (isset($id)) {
     echo "ID tidak ditemukan!";
 }
 require_once '../layouts/header.php';
-$sqlpembelian = mysqli_query($conn, "SELECT tp.id, tp.tanggal, tp.nama_bahan_baku, tp.jumlah, tp.total, tor.status, tor.bukti, tor.lokasi_barang 
-                                    FROM tb_order tor 
-                                    JOIN tb_pembelian tp ON tor.id = tp.id_order where tp.id = $id");
+$sqlpembelian = mysqli_query($conn, "SELECT tb_pembelian.id, tb_pembelian.tanggal, tb_pembelian.nama_bahan_baku, tb_pembelian.jumlah, tb_pembelian.total, tb_order.status, tb_order.bukti, tb_order.lokasi_barang 
+                                        FROM tb_order
+                                        JOIN tb_pembelian ON tb_order.id = tb_pembelian.id_order 
+                                        WHERE tb_pembelian.id = $id");
 
 $sqlfoto = mysqli_query($conn, "SELECT tp.id_order FROM tb_pembelian tp JOIN tb_order tor ON tp.id_order = tor.id WHERE tor.id = '$id'");
 
@@ -70,37 +71,6 @@ if (isset($_GET['ditolak_pimpinan'])) {
 //     $res = update('tb_pembelian', $pem, $pem['id']);
 // }
 
-if (isset($_GET['lolos_check'])) {
-    $pem = single('tb_pembelian', $_GET['lolos_check']);
-    $pem['keterangan'] = 'lolos check';
-
-    // Melakukan update ke tabel tb_pembelian
-    $res = update('tb_pembelian', $pem, $pem['id']);
-
-    // Mengambil nilai dari checkbox
-    $kuantitas = isset($_GET['kuantitas']) ? $_GET['kuantitas'] : 0;
-    $kualitas = isset($_GET['kualitas']) ? $_GET['kualitas'] : 0;
-    $fisik = isset($_GET['fisik']) ? $_GET['fisik'] : 0;
-
-    // Memasukkan data ke dalam tabel tb_pengecekan
-    $sql = "INSERT INTO tb_checking (id_pembelian, nama_bahan_baku, kuantitas, kualitas, fisik) VALUES (:id_pembelian, :nama_bahan_baku, :kuantitas, :kualitas, :fisik)";
-
-    $params = array(
-        ':id_pembelian' => $pem['id'],
-        ':nama_bahan_baku' => $pem['nama_bahan_baku'],
-        ':kuantitas' => $kuantitas,
-        ':kualitas' => $kualitas,
-        ':fisik' => $fisik
-    );
-
-    try {
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        echo "Data berhasil dimasukkan ke dalam tabel tb_checking.";
-    } catch (PDOException $e) {
-        echo "Error: " . $e->getMessage();
-    }
-}
 
 
 if (isset($_FILES['bukti'])) {
@@ -129,32 +99,32 @@ $pembelian = $_SESSION['user']['level'] == 'supplier' ? getForSupplier($_SESSION
 ?>
 
 <style>
-    .text-print {
+.text-print {
+    display: none;
+}
+
+@media print {
+    body {
+        visibility: hidden;
+    }
+
+    .no-print,
+    .dataTables_paginate.paging_simple_numbers {
         display: none;
     }
 
-    @media print {
-        body {
-            visibility: hidden;
-        }
-
-        .no-print,
-        .dataTables_paginate.paging_simple_numbers {
-            display: none;
-        }
-
-        .text-print {
-            display: block;
-        }
-
-        #print {
-            visibility: visible;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-        }
+    .text-print {
+        display: block;
     }
+
+    #print {
+        visibility: visible;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+    }
+}
 </style>
 <!-- ##### Breadcumb Area Start ##### -->
 <div class="breadcumb_area bg-img" style="background-image: url(assets/img/bg-img/breadcumb.jpg);">
@@ -178,8 +148,9 @@ $pembelian = $_SESSION['user']['level'] == 'supplier' ? getForSupplier($_SESSION
 // $id_konsumen = $_SESSION['user']['id'];
 $invoice = mysqli_query($conn, "select * from tb_order,tb_pembelian where tb_pembelian.id='$id'");
 while ($i = mysqli_fetch_array($sqlpembelian)) { ?>
-    <div class="col-md-6">
-        <div class="table-responsive cart_info">
+<div class="col-md-6">
+    <div class="table-responsive cart_info">
+        <form action="konfirmasipimpinan.php" method="GET" name="lolos_check">
             <table class="tables">
                 <tr>
                     <td colspan="4">&nbsp;</td>
@@ -205,40 +176,44 @@ while ($i = mysqli_fetch_array($sqlpembelian)) { ?>
                                 <td>Jumlah : </td>
                                 <td><?= $i['jumlah'] ?></td>
                             </tr>
-                            <form action="" method="GET" name="lolos_check">
-                                <tr>
-                                    <td>Keterangan : </td>
-                                    <td><input type="checkbox" id="kualitas" name="keterangan" value="kualitas">
-                                        <label for="Kualitas">Kualitas</label>
-                                        <input type="checkbox" id="kuantitas" name="kuantitas" value="kuantitas">
-                                        <label for="kuantitas">Kuantitas</label>
-                                        <input type="checkbox" id="fisik" name="fisik" value="fisik">
-                                        <label for="fisik">Fisik</label>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>Keterangan : </td>
+                                <td>
+                                    <input type="checkbox" id="kualitas" name="keterangan[]" value="kualitas">
+                                    <label for="kualitas">Kualitas</label>
+                                    <input type="checkbox" id="kuantitas" name="keterangan[]" value="kuantitas">
+                                    <label for="kuantitas">Kuantitas</label>
+                                    <input type="checkbox" id="fisik" name="keterangan[]" value="fisik">
+                                    <label for="fisik">Fisik</label>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Aksi : </td>
+                                <input type="hidden" value="<?= $i['id'] ?>" name="id_pembelian">
+                                <input type="hidden" value="<?= $i['nama_bahan_baku'] ?>" name="nama_bahan_baku">
+                                <td>
+                                    <button type="submit" name="submit" class="badge badge-success">Konfirmasi</button>
+                                    <a href="index.php?ditolak_pimpinan=<?= $pem['id'] ?>"
+                                        class="badge badge-success">Tolak</a>
+                                </td>
+                            </tr>
 
-                                <tr>
-                                    <td>Aksi : </td>
-                                    <input type="hidden" value="<?php $i['id'] ?>" name="id_pembelian">
-                                    <input type="hidden" value="<?php $i['nama_bahan_baku'] ?>" name="nama_bahan_baku">
-                                    <td><a href="detail_pembalian_admin.php?lolos_check=<?= $pem['id'] ?>" type="submit" class="badge badge-success">Konfirmasi</a>
-                            </form>
-                            <a href="index.php?ditolak_pimpinan=<?= $pem['id'] ?>" class="badge badge-success">Tolak</a>
                     </td>
                 </tr>
 
                 <!-- <tr>
-                                <td>Bukti: </td>
-                                <td><img src="../uploads/<?php echo $i['bukti']; ?>" width="300px"></td>
-
-                            </tr> -->
+                        <td>Bukti: </td>
+                        <td><img src="../uploads/<?php echo $i['bukti']; ?>" width="300px"></td>
+                        
+                    </tr> -->
             </table>
-            </td>
-            </tr>
-            </table>
-        </div>
+        </form>
+        </td>
+        </tr>
+        </table>
     </div>
-    <br>
+</div>
+<br>
 
 
 <?php } ?>
