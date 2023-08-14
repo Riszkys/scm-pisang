@@ -61,7 +61,22 @@ if (isset($_GET['confirm-payment'])) {
 
 require_once '../layouts/header.php';
 $id_konsumen = $_SESSION['user']['id'];
-$sqlPembelian = mysqli_query($conn, "SELECT * FROM tb_transaksi,tb_konsumen WHERE tb_transaksi.id_konsumen=tb_konsumen.id AND id_konsumen='$id_konsumen'");
+$sqlPembelian = mysqli_query($conn, "
+    SELECT
+        tt.*,
+        tk.*,
+        ttd.*
+    FROM
+        tb_transaksi tt
+    INNER JOIN
+        tb_konsumen tk ON tt.id_konsumen = tk.id
+    INNER JOIN
+        tb_transaksi_detail ttd ON tt.id = ttd.id_transaksi
+    WHERE
+        tt.id_konsumen = '$id_konsumen'
+");
+
+
 ?>
 
 <style>
@@ -235,10 +250,10 @@ $sqlPembelian = mysqli_query($conn, "SELECT * FROM tb_transaksi,tb_konsumen WHER
                                             <td>
                                                 <a class='btn btn-sm btn-info' href="transaksi_detail.php?id=<?php echo $data[0]; ?>">Detail</a>
                                                 <!-- Button trigger modal Return -->
-                                                <?php  if ($data['status'] == 5) :  ?>
-                                                <button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#myModal2<?= $data[0] ?>">
-                                                    Return
-                                                </button>
+                                                <?php if ($data['status'] == 5) :  ?>
+                                                    <button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#myModal2<?= $data[0] ?>">
+                                                        Return
+                                                    </button>
                                                 <?php endif ?>
                                                 <!-- Modal return -->
                                                 <div class="modal fade" id="myModal2<?= $data[0] ?>" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -264,8 +279,10 @@ $sqlPembelian = mysqli_query($conn, "SELECT * FROM tb_transaksi,tb_konsumen WHER
                                                                                 <textarea class="form-control" name="alasan" aria-label="Isi" required></textarea>
                                                                                 <small style="color:#0A0224;" class="text-muted">Note: Berikan alasan
                                                                                     yang dapat diterima oleh admin</small>
+                                                                                <span style="margin-top: 15px;">Jumlah Return</span>
+                                                                                <input type="number" style="margin-top: 15px;" name="jumlah_return" value="<?= $data['jumlah'] ?>" max="<?= $data['jumlah'] ?>">
                                                                             </div>
-                                                                            <input  type="submit" value="submit" class="btn btn-primary">
+                                                                            <input type="submit" value="submit" class="btn btn-primary">
                                                                         </form>
                                                                     </div>
                                                                 </div>
@@ -273,13 +290,9 @@ $sqlPembelian = mysqli_query($conn, "SELECT * FROM tb_transaksi,tb_konsumen WHER
                                                         </div>
                                                     </div>
                                                 </div>
-                                                           
                                             </td>
 
                                             </td>
-
-
-
                                         </tr>
                                     <?php } ?>
                                 </tbody>

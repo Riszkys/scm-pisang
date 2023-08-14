@@ -1,12 +1,12 @@
-<?php 
-   $current = "Tracking";
+<?php
+$current = "Tracking";
 
-    require_once '../qb.php';
+require_once '../qb.php';
 
 
-    require_once '../layouts/header.php';
+require_once '../layouts/header.php';
 
-   
+
 ?>
 <!-- Content Header (Page header) -->
 <div class="content-header">
@@ -17,7 +17,7 @@
             </div><!-- /.col -->
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="../index.php">Home</a></li>
                     <li class="breadcrumb-item active">Tracking Order</li>
                 </ol>
             </div><!-- /.col -->

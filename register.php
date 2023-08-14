@@ -3,17 +3,22 @@ require_once 'functions.php';
 
 if (isset($_POST["register"])) {
     unset($_POST["register"]);
-    $res = insert("tb_konsumen",$_POST);
-    if($res){
+
+
+    $_POST["status_reg"] = "Belum Dikonfirmasi";
+
+    $res = insert("tb_konsumen", $_POST);
+    if ($res) {
         header("location:login.php");
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <title>PT. Hijau Surya Biotechindo  | Register</title>
+    <title>PT. Hijau Surya Biotechindo | Register</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--===============================================================================================-->
@@ -43,7 +48,7 @@ if (isset($_POST["register"])) {
             <div class="wrap-login100 p-t-0 p-b-30">
                 <form class="login100-form validate-form" method="post">
                     <div class="login100-form-avatar">
-                        
+
                     </div>
 
                     <span class="login100-form-title p-t-0 p-b-45">
@@ -98,6 +103,8 @@ if (isset($_POST["register"])) {
                         </span>
                     </div>
 
+                    <input class="input100" type="text" name="status_reg" hidden>
+
                     <div class="container-login100-form-btn p-t-10">
                         <button class="login100-form-btn" name="register">
                             Register
@@ -107,7 +114,7 @@ if (isset($_POST["register"])) {
                     <div class="container-login100-form-btn p-t-10">
                         <a href="login.php" class="login100-form-btn">
                             Login
-</a>
+                        </a>
                     </div>
 
                     <!-- <div class="text-center w-full p-t-25 p-b-230">

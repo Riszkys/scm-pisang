@@ -97,7 +97,7 @@
                                     for($a = 0; $a < $jumlah_isi_keranjang; $a++){
                                         $id_produk = $_SESSION['keranjang'][$a]['produk'];
                                         $jml = $_SESSION['keranjang'][$a]['jumlah'];
-                                        $isi = mysqli_query($conn,"select * from tb_bahan_baku where id='$id_produk'");
+                                        $isi = mysqli_query($conn, "SELECT *, (harga + 3000) as harga FROM tb_bahan_baku WHERE id='$id_produk'");
                                         $i = mysqli_fetch_assoc($isi);
                                         $harga = $i['harga'];
                                         $total = $harga * $jml;

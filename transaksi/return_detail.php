@@ -132,8 +132,6 @@ while ($row = mysqli_fetch_assoc($invoice)) {
     <a class="btn btn-sm btn-danger ml-3" href="transaksi_status.php?id_transaksi=<?= $id_transaksi; ?>&status=7" onclick="return confirm('Batalkan Pesanan?');" class='btn btn-danger'>Tolak Ajuan Return</a>
 <?php } ?>
 
-
-
 <!-- <form action="konfirmasi_return.php" method="post">
     <input type="hidden" name="id_transaksi" value="<?= $id_transaksi ?>">
     <a href="index.php" class="btn btn-sm btn-warning ml-3">Konfirmasi Return</a>
@@ -142,12 +140,27 @@ while ($row = mysqli_fetch_assoc($invoice)) {
 <br>
 <?php
 $id_konsumen = $_SESSION['user']['id'];
-$invoice = mysqli_query($conn, "SELECT t.*, k.*, dt.*, t.status 
-                               FROM tb_transaksi t
-                               JOIN tb_konsumen k ON t.id_konsumen = k.id
-                               JOIN tb_transaksi_detail dt ON t.id = dt.id_transaksi
-                               WHERE t.id = '$id_transaksi'
-                               ORDER BY t.id DESC");
+$invoice = mysqli_query($conn, "
+    SELECT
+        t.*,
+        k.*,
+        dt.*,
+        tr.*,
+        t.status 
+    FROM
+        tb_transaksi t
+    JOIN
+        tb_konsumen k ON t.id_konsumen = k.id
+    JOIN
+        tb_transaksi_detail dt ON t.id = dt.id_transaksi
+    LEFT JOIN
+        tb_return tr ON t.id = tr.id_pembelian
+    WHERE
+        t.id = '$id_transaksi'
+    ORDER BY
+        t.id DESC
+");
+
 
 while ($i = mysqli_fetch_array($invoice)) { ?>
     <div class="col-md-6">
@@ -182,8 +195,8 @@ while ($i = mysqli_fetch_array($invoice)) { ?>
                                 <td><?= $i['hp'] ?></td>
                             </tr>
                             <tr>
-                                <td>Jumlah Pembelian: </td>
-                                <td><?= $i['jumlah'] ?></td>
+                                <td>Jumlah Return: </td>
+                                <td><?= $i['jumlah_return'] ?></td>
                             </tr>
                         </table>
                     </td>
@@ -197,7 +210,7 @@ while ($i = mysqli_fetch_array($invoice)) { ?>
 
         $jumlahbeli = $i['jumlah'];
         $_SESSION['jumlahbeli'] = $jumlahbeli;
-       
+
         ?>
 
         <table class="tables total-result">

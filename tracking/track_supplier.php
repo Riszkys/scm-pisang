@@ -2,8 +2,8 @@
 
 $current = "Tracking";
 
-    require_once '../qb.php';
-    require_once '../layouts/header.php';
+require_once '../qb.php';
+require_once '../layouts/header.php';
 
 $id_supplier = $_SESSION["user"]["id"];
 $supplier_status = $conn->query("SELECT * FROM tb_pembelian JOIN tb_supplier ON tb_pembelian.id_supplier=tb_supplier.id JOIN tb_order ON tb_pembelian.id_order=tb_order.id WHERE tb_pembelian.id_supplier='$id_supplier' AND keterangan='diterima' AND tb_order.status='2' ORDER BY tb_pembelian.id DESC");
@@ -18,7 +18,7 @@ $supplier_status = $conn->query("SELECT * FROM tb_pembelian JOIN tb_supplier ON 
             </div><!-- /.col -->
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="../index.php">Home</a></li>
                     <li class="breadcrumb-item active">Pembelian</li>
                 </ol>
             </div><!-- /.col -->

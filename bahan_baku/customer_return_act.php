@@ -4,6 +4,7 @@ include '../db.php';
 $id_pembelian = $_POST['id_pembelian'];
 $id_konsumen = $_POST['id_konsumen'];
 $alasan = $_POST['alasan'];
+$jumlah_return = $_POST['jumlah_return'];
 
 $rand = rand();
 $allowed =  array('png', 'jpg', 'jpeg');
@@ -12,8 +13,8 @@ $filename = $_FILES['bukti']['name'];
 
 $ext = pathinfo($filename, PATHINFO_EXTENSION);
 
-$query = "INSERT INTO tb_return (id_konsumen, id_pembelian, tanggal_return, alasan_return) 
-          VALUES ('$id_konsumen', '$id_pembelian', NOW(), '$alasan')";
+$query = "INSERT INTO tb_return (id_konsumen, id_pembelian, tanggal_return, alasan_return, jumlah_return) 
+          VALUES ('$id_konsumen', '$id_pembelian', NOW(), '$alasan', '$jumlah_return')";
 mysqli_query($conn, $query);
 
 $queryupdate = "update  `tb_transaksi` set status = '6' where id = $id_pembelian";

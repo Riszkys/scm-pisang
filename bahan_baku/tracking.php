@@ -39,7 +39,6 @@ require_once '../layouts/header.php';
                                     <div class="form-group">
                                         <label for="">ID Transaksi</label>
                                         <input type="text" name="id_pembelian" id="" class="form-control">
-
                                     </div>
                             </div>
                             <div class="col-md-2">
@@ -132,6 +131,8 @@ require_once '../layouts/header.php';
                                                                     <p>Menunggu</p>
                                                                 <?php elseif ($beli['status'] == 1) : ?>
                                                                     <p>Menunggu</p>
+                                                                <?php elseif ($beli['status'] == 6) : ?>
+                                                                    <p>Menunggu Return</p>
                                                                 <?php elseif ($beli['status'] == 8) : ?>
                                                                     <p>Diterima</p>
                                                                 <?php elseif ($beli['status'] <= 5) : ?>

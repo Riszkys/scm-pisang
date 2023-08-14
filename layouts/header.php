@@ -10,11 +10,19 @@ if ($current != "login") {
 //admin
 $cek_status = $conn->query("SELECT * FROM tb_pembelian JOIN tb_supplier ON tb_pembelian.id_supplier=tb_supplier.id JOIN tb_order ON tb_pembelian.id_order=tb_order.id WHERE keterangan='diterima' AND tb_order.status='2' ORDER BY tb_pembelian.id DESC");
 $jumlah_notif = $cek_status->num_rows;
+
 //supplier
+
 $id_supplier = $_SESSION["user"]["id"];
 $supplier_status = $conn->query("SELECT * FROM tb_pembelian JOIN tb_supplier ON tb_pembelian.id_supplier=tb_supplier.id JOIN tb_order ON tb_pembelian.id_order=tb_order.id WHERE tb_pembelian.id_supplier='$id_supplier' AND keterangan='checkout' OR keterangan='diterima' ORDER BY tb_pembelian.id DESC");
 $jumlah_notif_supplier = $supplier_status->num_rows;
 
+$admin_status = $conn->query("SELECT tb_transaksi.*, tb_konsumen.nama_konsumen 
+                              FROM tb_transaksi 
+                              JOIN tb_konsumen ON tb_transaksi.id_konsumen = tb_konsumen.id 
+                              WHERE tb_transaksi.status >= '0' and tb_transaksi.status <= '6' and tb_transaksi.status != '5' and tb_transaksi.status != '4' 
+                              ORDER BY tb_transaksi.id DESC");
+$jumlah_notif_admin = $admin_status->num_rows;
 ?>
 <!DOCTYPE html>
 <html>
@@ -176,27 +184,56 @@ $jumlah_notif_supplier = $supplier_status->num_rows;
       </ul>
       <!-- Right navbar links -->
       <?php if ($_SESSION["user"]["level"] == "admin") : ?>
-
         <ul class="navbar-nav ml-auto">
           <li class="nav-item dropdown mr-5">
             <a class="nav-link" data-toggle="dropdown" href="#">
               <i class="far fa-bell"></i>
-              <span class="badge badge-primary navbar-badge"><?= $jumlah_notif ?></span>
+              <span class="badge badge-primary navbar-badge">
+                <?= $jumlah_notif_admin ?>
+              </span>
             </a>
             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-              <span class="dropdown-item dropdown-header"><?= $jumlah_notif ?> Notifications</span>
+              <span class="dropdown-item dropdown-header"><?= $jumlah_notif_admin ?> Notifications</span>
               <div class="dropdown-divider"></div>
-              <?php foreach ($cek_status as $c => $cc) : ?>
-                <a href="/pembelian/index.php" class="dropdown-item">
-                  <i class="fas fa-envelope mr-2"></i><?php echo ucfirst($cc['nama_supplier']) . '/' . $cc['tanggal'] ?>
-                  <span class="float-right badge badge-danger"><?= $cc['lokasi_barang'] ?></span>
-                </a>
+              <?php foreach ($admin_status as $e => $ee) : ?>
+
+                <?php if ($ee['status'] == 0) : ?>
+                  <a href="../transaksi/index.php" class="dropdown-item">
+                    <i class="fas fa-envelope mr-2"></i> Pesanan Masuk :
+                    <?php echo ucfirst($ee['nama_konsumen']) ?>
+                    <span class="float-right badge badge-primary">cek</span>
+                  </a>
+                <?php endif; ?>
+
+                <?php if ($ee['status'] == 1) : ?>
+                  <a href="../transaksi/index.php" class="dropdown-item">
+                    <i class="fas fa-envelope mr-2"></i>Bukti Telah Dikirim :
+                    <?php echo ucfirst($ee['nama_konsumen']) ?>
+                    <span class="float-right badge badge-primary">cek</span>
+                  </a>
+                <?php endif; ?>
+                <?php if ($ee['status'] == 2) : ?>
+                  <a href="../transaksi/index.php" class="dropdown-item">
+                    <i class="fas fa-envelope mr-2"></i>Menunggu Untuk Dikirim :
+                    <?php echo ucfirst($ee['nama_konsumen']) ?>
+                    <span class="float-right badge badge-primary">cek</span>
+                  </a>
+                <?php endif; ?>
+                <?php if ($ee['status'] == 6) : ?>
+                  <a href="../transaksi/index.php" class="dropdown-item">
+                    <i class="fas fa-envelope mr-2"></i>Permintaan Return :
+                    <?php echo ucfirst($ee['nama_konsumen']) ?>
+                    <span class="float-right badge badge-success">cek</span>
+                  </a>
+                <?php endif; ?>
               <?php endforeach; ?>
 
             </div>
           </li>
         </ul>
-      <?php endif; ?>
+
+      <?php endif;
+      ?>
       <?php if ($_SESSION["user"]["level"] == "konsumen") : ?>
         <?php
         // 
@@ -368,17 +405,17 @@ $jumlah_notif_supplier = $supplier_status->num_rows;
                 </a>
               </li>
               <li class="nav-item">
-                <?php $baseHref = ($current == "dashboard") ? "produk/index.php" : "../produk/index.php"; ?>
+                <?php $baseHref = ($current == "dashboard") ? "control_menu/index.php" : "../control_menu/index.php"; ?>
                 <a href="<?= $baseHref ?>" class="nav-link <?= $current == "data produk" ? "active" : "" ?>">
                   <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi nav-icon bi-journal-check" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 1h5v1H4a1 1 0 0 0-1 1H2a2 2 0 0 1 2-2zm10 7v5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2h1a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V8h1zM2 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H2zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H2zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H2z" />
                     <path fill-rule="evenodd" d="M15.854 2.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 4.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
                   </svg>
-                  Barang Masuk
+                  Control Menu
                 </a>
               </li>
 
-              <li class="nav-item">
+              <!-- <li class="nav-item">
                 <?php $baseHref = ($current == "dashboard") ? "produksi/index.php" : "../produksi/index.php"; ?>
                 <a href="<?= $baseHref ?>" class="nav-link <?= $current == "data produksi" ? "active" : "" ?>">
                   <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi nav-icon bi-journal-check" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -387,8 +424,8 @@ $jumlah_notif_supplier = $supplier_status->num_rows;
                   </svg>
                   Barang Keluar
                 </a>
-              </li>
-
+              </li> -->
+              <!-- 
               <li class="nav-item">
                 <?php $baseHref = ($current == "dashboard") ? "penjualan/index.php" : "../penjualan/index.php"; ?>
                 <a href="<?= $baseHref ?>" class="nav-link <?= $current == "data penjualan" ? "active" : "" ?>">
@@ -398,7 +435,8 @@ $jumlah_notif_supplier = $supplier_status->num_rows;
                   </svg>
                   Penjualan
                 </a>
-              </li>
+              </li> -->
+
               <li class="nav-item">
                 <?php $baseHref = ($current == "dashboard") ? "konsumen/index.php" : "../konsumen/index.php"; ?>
                 <a href="<?= $baseHref ?>" class="nav-link <?= $current == "data konsumen" ? "active" : "" ?>">

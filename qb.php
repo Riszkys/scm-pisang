@@ -52,13 +52,31 @@ function getCount($tbl)
     return count($res->fetch_all(MYSQLI_ASSOC));
 }
 
-function get($tbl)
+function get($tbl, $columns = "*")
 {
     global $conn;
-    $query = "SELECT * FROM $tbl";
+    $query = "SELECT $columns FROM $tbl";
     $res = $conn->query($query);
     return $res->fetch_all(MYSQLI_ASSOC);
 }
+function get1($tbl, $columns = "*", $groupBy = "")
+{
+    global $conn;
+    $query = "SELECT $columns FROM $tbl";
+
+    if (!empty($groupBy)) {
+        $query .= " GROUP BY $groupBy";
+    }
+
+    $res = $conn->query($query);
+
+    if ($res && $res->num_rows > 0) {
+        return $res->fetch_all(MYSQLI_ASSOC);
+    }
+
+    return array(); // Return empty array if no results
+}
+
 
 function getBy($tbl, $clause)
 {

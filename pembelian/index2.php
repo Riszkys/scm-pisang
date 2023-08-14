@@ -117,7 +117,7 @@ $orders = $_SESSION['user']['level'] == 'supplier' ? getForSupplier($_SESSION['u
             </div><!-- /.col -->
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="../index.php">Home</a></li>
                     <li class="breadcrumb-item active">Pembelian</li>
                 </ol>
             </div><!-- /.col -->
@@ -209,128 +209,115 @@ $orders = $_SESSION['user']['level'] == 'supplier' ? getForSupplier($_SESSION['u
                             </div>
                             <table class="table table-bordered table-stripped" width="100%">
                                 <tbody>
-                                    <?php
-                                    foreach ($orders as $ord) :
-                                        $pems = getBy('tb_pembelian', ['id_order' => $ord['id']]);
-                                        if (isset($_GET['filter']))
-                                            $pems = getPembelianFilter($_GET, $ord['id']);
+                                    <?php if (count($orders) > 0) :
+                                        foreach ($orders as $ord) :
+                                            $pems = getBy('tb_pembelian', ['id_order' => $ord['id']]);
+                                            if (isset($_GET['filter']))
+                                                $pems = getPembelianFilter($_GET, $ord['id']);
 
-                                        if (empty($pems)) continue;
-                                        $suppl = single('tb_supplier', $ord['id_supplier']);
-                                        $is_checkout = false;
-                                        $is_cancel   = false;
-                                        foreach ($pems as $pem) {
-                                            if ($pem['keterangan'] == 'ditolak') {
-                                                $is_cancel = true;
-                                            }
+                                            if (empty($pems)) continue;
+                                            $suppl = single('tb_supplier', $ord['id_supplier']);
+                                            $is_checkout = false;
+                                            $is_cancel   = false;
+                                            foreach ($pems as $pem) {
+                                                if ($pem['keterangan'] == 'ditolak') {
+                                                    $is_cancel = true;
+                                                }
 
-                                            if ($pem['keterangan'] == 'checkout') {
-                                                $is_cancel = false;
-                                                $is_checkout = true;
-                                                break;
+                                                if ($pem['keterangan'] == 'checkout') {
+                                                    $is_cancel = false;
+                                                    $is_checkout = true;
+                                                    break;
+                                                }
                                             }
-                                        }
                                     ?>
-                                        <tr class="bg-light">
+                                            <tr class="bg-light">
+                                                <td colspan="3"><b>Supplier : <?= $suppl['nama_supplier'] ?></b></td>
+                                                <td><b>Tanggal : <?= $ord['tanggal'] ?></b></td>
+                                                <?php if ($ord['bukti'] == null && $_SESSION['user']['level'] != 'supplier' && $is_checkout == false && $is_cancel == false) : ?>
+                                                    <form action="" method="post" enctype="multipart/form-data" id="upload" style="display:none">
+                                                        <input type="hidden" name="id" value="<?= $ord['id'] ?>">
+                                                        <input type="file" style="display:none" name="bukti" id="bukti">
+                                                    </form>
+                                                    <td>
+                                                        <button class="btn btn-info btn-sm" onclick="upload()">Upload Bukti</button>
+                                                    </td>
+                                                <?php else : ?>
 
-                                            <td colspan="3"><b>Supplier : <?= $suppl['nama_supplier'] ?></b></td>
-                                            <td><b>Tanggal : <?= $ord['tanggal'] ?></b></td>
-                                            <?php if ($ord['bukti'] == null && $_SESSION['user']['level'] = 'supplier' && $is_checkout == false && $is_cancel == false) : ?>
-                                                <form action="" method="post" enctype="multipart/form-data" id="upload" style="display:none">
-                                                    <input type="hidden" name="id" value="<?= $ord['id'] ?>">
-                                                    <input type="file" style="display:none" name="bukti" id="bukti">
-                                                </form>
-                                                <td>
-                                                    <button class="btn btn-info btn-sm" onclick="upload()">Upload Bukti</button>
-                                                </td>
-                                            <?php else : ?>
-
-                                                <td>
-                                                    <?php if ($is_checkout == false && $is_cancel == false) : ?>
-                                                        <?php
-                                                        if ($_SESSION['user']['level'] != 'supplier') {
-                                                            if ($ord['status'] == 1) {
-                                                                echo "<span class=\"badge badge-info\"> Bukti telah dikirim</span>";
-                                                            } elseif ($ord['status'] == 2) {
-                                                                echo "<span class=\"badge badge-info\">Dikonfirmasi</span>";
-                                                            } elseif ($ord['status'] == 3) {
-                                                                echo "<span class=\"badge badge-info\">Ditolak</span>";
-                                                            } elseif ($ord['status'] == 4) {
-                                                                echo "<span class=\"badge badge-info\">Selesai</span>";
-                                                            }
-                                                        } else {
-                                                            if ($ord['status'] == 1) {
-                                                                echo "<button type=\"button\" class=\"btn btn-info badge hide-print\"
+                                                    <td>
+                                                        <?php if ($is_checkout == false && $is_cancel == false) : ?>
+                                                            <span class="badge badge-info">
+                                                                <?php
+                                                                if ($_SESSION['user']['level'] != 'supplier') {
+                                                                    if ($ord['status'] == 1) {
+                                                                        echo "<span class=\"badge badge-info\"> Bukti telah dikirim</span>";
+                                                                    } elseif ($ord['status'] == 2) {
+                                                                        echo "<span class=\"badge badge-info\">Dikonfirmasi</span>";
+                                                                    } elseif ($ord['status'] == 3) {
+                                                                        echo "<span class=\"badge badge-info\">Ditolak</span>";
+                                                                    } elseif ($ord['status'] == 4) {
+                                                                        echo "<span class=\"badge badge-info\">Selesai</span>";
+                                                                    }
+                                                                } else {
+                                                                    if ($ord['status'] == 1) {
+                                                                        echo "<button type=\"button\" class=\"btn btn-info badge hide-print\"
                                                                         data-toggle=\"modal\" data-target=\"#myModal" . $ord['id'] . "\">Lihat
                                                 Bukti</button>";
-                                                            } elseif ($ord['status'] == 2) {
-                                                                echo "<span class=\"badge badge-info\">Dikonfirmasi</span>";
-                                                            } elseif ($ord['status'] == 3) {
-                                                                echo "<span class=\"badge badge-info\">Ditolak</span>";
-                                                            } else {
-                                                                echo "<span class=\"badge badge-info\">Bukti belum dikirim</span>";
-                                                            }
-                                                        }
-                                                        ?>
-                                                        <div class="modal fade" <?= "id=\"myModal" . $ord['id'] . "\"" ?> tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-                                                            <div class="modal-dialog" role="document">
-                                                                <div class="modal-content">
-                                                                    <div class="modal-header">
-                                                                        <h4 class="modal-title" id="myModalLabel">Lihat Bukti
-                                                                        </h4>
-                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                                                    </div>
-                                                                    <div class="modal-body">
-                                                                        <div class="row">
-                                                                            <div class="col-12">
-                                                                                <img src="../uploads/<?= $ord['bukti'] ?>" alt=".." height="400">
+                                                                    } elseif ($ord['status'] == 2) {
+                                                                        echo "<span class=\"badge badge-info\">Dikonfirmasi</span>";
+                                                                    } elseif ($ord['status'] == 3) {
+                                                                        echo "<span class=\"badge badge-info\">Ditolak</span>";
+                                                                    } else {
+                                                                        echo "<span class=\"badge badge-info\">Bukti belum dikirim</span>";
+                                                                    }
+                                                                }
+                                                                ?>
+                                                                <div class="modal fade" <?= "id=\"myModal" . $ord['id'] . "\"" ?> tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                                                                    <div class="modal-dialog" role="document">
+                                                                        <div class="modal-content">
+                                                                            <div class="modal-header">
+                                                                                <h4 class="modal-title" id="myModalLabel">Lihat Bukti
+                                                                                </h4>
+                                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                                            </div>
+                                                                            <div class="modal-body">
+                                                                                <div class="row">
+                                                                                    <div class="col-12">
+                                                                                        <img src="../uploads/<?= $ord['bukti'] ?>" alt=".." height="400">
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="modal-footer">
+                                                                                <?php if ($ord['status'] < 2) { ?>
+                                                                                    <a href="pembelian_status.php?id_transaksi=<?= $ord['id']; ?>&status=2" onclick="return confirm('Terima Pesanan?');" class='btn btn-success'>Terima</a>
+                                                                                    <a href="pembelian_status.php?id_transaksi=<?= $ord['id']; ?>&status=3" onclick="return confirm('Batalkan Pesanan?');" class='btn btn-danger'>Tolak</a>
+                                                                                <?php } ?>
+                                                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="modal-footer">
-                                                                        <?php if ($ord['status'] < 2) { ?>
-                                                                            <a href="pembelian_status.php?id_transaksi=<?= $ord['id']; ?>&status=2" onclick="return confirm('Terima Pesanan?');" class='btn btn-success'>Terima</a>
-                                                                            <a href="pembelian_status.php?id_transaksi=<?= $ord['id']; ?>&status=3" onclick="return confirm('Batalkan Pesanan?');" class='btn btn-danger'>Tolak</a>
-                                                                        <?php } ?>
-                                                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        </div>
-                                                    <?php
-                                                    elseif ($is_cancel) :
-                                                    ?>
-                                                        <span class="badge badge-danger">Di tolak</span>
-                                                    <?php
-                                                    endif;
-                                                    if ($_SESSION['user']['level'] == 'admin') {
+                                                            </span>
+
+
+                                                        <?php
+                                                        elseif ($is_cancel) :
+                                                        ?>
+                                                            <span class="badge badge-danger">Di tolak</span>
+                                                        <?php
+                                                        endif;
+                                                        //aslinya supplier rolenya
                                                         if ($ord['status'] == 1) {
-                                                            echo "<br><a class=\"btn btn-md btn-primary\" href=\"detail_pembelian.php?id=" . $pem['id'] . "\">Lihat Bukti</a>";
+                                                            echo "<br><a class=\"btn btn-md btn-primary\" href=\"detail_pembelian.php?id=" . $pem['id'] . "\">Detail Pembelian</a>";
                                                         }
-                                                    }
-                                                    ?>
-                                                </td>
-                                            <?php endif; ?>
-                                        </tr>
-                                        <!-- suppliyer -->
-                                        <?php
 
-                                        $sqlpembelian = "SELECT tb_pembelian.*
-                                        FROM tb_pembelian
-                                        INNER JOIN tb_order ON tb_pembelian.id_order = tb_order.id
-                                        ";
-                                        $resultpembelian = mysqli_query($conn, $sqlpembelian);
-
-
-                                        $pems = mysqli_fetch_all($resultpembelian, MYSQLI_ASSOC);
-                                        foreach ($orders as $ord) :
-                                            foreach ($pems as $pem) {
-
-                                                // echo "ID: " . $pem["id"] . "<br>";
-                                            }
+                                                        ?>
+                                                    </td>
+                                                <?php endif; ?>
+                                            </tr>
+                                            <?php
                                             foreach ($pems as $pem) :
-                                        ?>
-                                                <!-- suppliyer -->
+                                            ?>
                                                 <tr>
                                                     <td>
                                                         <b>ID : <?= $pem["id"] ?></b>
@@ -351,28 +338,92 @@ $orders = $_SESSION['user']['level'] == 'supplier' ? getForSupplier($_SESSION['u
                                                             <span class="badge badge-danger"><?= $pem["keterangan"] ?></span>
                                                         <?php elseif ($pem['keterangan'] == 'selesai') : ?>
                                                             <span class="badge badge-success"><?= $pem["keterangan"] ?></span>
+                                                        <?php elseif ($pem['keterangan'] == 'return') : ?>
+                                                            <span class="badge badge-warning"><?= $pem["keterangan"] ?></span>
+                                                        <?php elseif ($pem['keterangan'] == 'return diterima') : ?>
+                                                            <span class="badge badge-success"><?= $pem["keterangan"] ?></span>
+                                                        <?php elseif ($pem['keterangan'] == 'return ditolak') : ?>
+                                                            <span class="badge badge-danger"><?= $pem["keterangan"] ?></span>
                                                         <?php elseif ($pem['keterangan'] == 'ditolak') : ?>
                                                             <span class="badge badge-danger"><?= $pem["keterangan"] ?></span>
                                                         <?php endif ?>
                                                     </td>
                                                     <td>Rp. <?= number_format($pem["total"]) ?></td>
-                                                    <?php if ($_SESSION['user']['level'] == 'supplier' && $pem['keterangan'] == 'checkout') : ?>
+                                                    <?php if ($_SESSION['user']['level'] == 'supplier' && ($pem['keterangan'] == 'checkout' || $pem['keterangan'] == 'return')) : ?>
                                                         <td class="no-print">
-                                                            <a href="index.php?available=<?= $pem['id'] ?>" class="badge badge-success">Pisang tersedia</a>
-                                                            <a href="index.php?unavailable=<?= $pem['id'] ?>" class="badge badge-danger">Pisang tidak tersedia</a>
+
+
+                                                            <?php if ($pem['keterangan'] == 'checkout') { ?>
+                                                                <a href="index.php?available=<?= $pem['id'] ?>" class="badge badge-success">Pisang tersedia</a>
+                                                                <a href="index.php?unavailable=<?= $pem['id'] ?>" class="badge badge-danger">Pisang tidak tersedia</a>
+                                                            <?php } ?>
+                                                            <?php if ($pem['keterangan'] == 'return') { ?>
+                                                                <a class='badge badge-info hide-print' href="return_detail.php?id=<?php echo $pem['id']; ?>">Detail Retur</a>
+                                                            <?php } ?>
                                                         </td>
-                                                    <?php elseif ($_SESSION['user']['level'] == 'admin' && $pem['keterangan'] == 'diterima' && $ord['status'] == 2) : ?>
+                                                    <?php elseif ($_SESSION['user']['level'] == 'admin' && ($pem['keterangan'] == 'diterima' || $pem['keterangan'] == 'selesai')) : ?>
                                                         <td class="no-print">
-                                                            <a href="index.php?confirm=<?= $pem['id'] ?>" class="badge badge-success">Konfirmasi</a>
+
+                                                            <?php if ($pem['keterangan'] == 'diterima') :  ?>
+                                                                <a href="index.php?confirm=<?= $pem['id'] ?>" class="badge badge-success">Konfirmasi</a>
+                                                            <?php endif ?>
+
+                                                            <?php if ($pem['keterangan'] == 'selesai') :  ?>
+                                                                <button type="button" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#myModal2<?= $pem["id"] ?>">
+                                                                    Return
+                                                                </button>
+                                                            <?php endif ?>
+
                                                         </td>
+
+                                                        <!-- Modal return -->
+                                                        <div class="modal fade" id="myModal2<?= $pem["id"] ?>" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                                                            <div class="modal-dialog" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h4 class="modal-title" id="myModalLabel">Pengajuan Return
+                                                                        </h4>
+                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                                    </div>
+                                                                    <div class="modal-body" style="width: 400px;">
+                                                                        <div class="row">
+                                                                            <div class="col">
+                                                                                <form class="container" action="return_act.php" method="post" enctype="multipart/form-data">
+                                                                                    <div class="input-group">
+                                                                                        <label style="color:#0A0224;">Upload
+                                                                                            Barang return</label>
+                                                                                        <input class="" type="file" name="bukti" required="required">
+                                                                                        <input type="hidden" name="id_pembelian" value="<?php echo $pem['id']; ?>">
+                                                                                        <input type="hidden" name="id_supplier" value="<?php echo $pem['id_supplier']; ?>">
+                                                                                        <span class="input-group-text" style="width: 10rem;">Alasan Return
+                                                                                            :</span>
+                                                                                        <textarea class="form-control" name="alasan" aria-label="Isi" required></textarea>
+                                                                                        <small style="color:#0A0224;" class="text-muted">Note: Berikan alasan
+                                                                                            yang dapat diterima oleh admin</small>
+                                                                                        <span style="margin-top: 15px;">Jumlah
+                                                                                            Return</span>
+                                                                                        <input type="number" style="margin-top: 15px;" name="jumlah_return" value="<?= $pem['jumlah'] ?>" max="<?= $pem['jumlah'] ?>">
+                                                                                    </div>
+                                                                                    <input type="submit" value="submit" class="btn btn-primary">
+                                                                                </form>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
                                                     <?php else : ?>
-                                                        <!-- <td class="no-print">Tidak ada aksi</td> -->
+                                                        <td class="no-print">Tidak ada aksi</td>
                                                     <?php endif ?>
                                                 </tr>
                                             <?php endforeach; ?>
                                         <?php endforeach; ?>
-                                    <?php endforeach; ?>
-
+                                    <?php else : ?>
+                                        <tr class="text-center">
+                                            <td colspan="6">Tidak ada Data</td>
+                                        </tr>
+                                    <?php endif ?>
                                 </tbody>
                             </table>
                         </div>

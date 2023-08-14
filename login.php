@@ -4,45 +4,87 @@ require_once 'functions.php';
 if ($conn->connect_error) {
     die("Koneksi gagal: " . $conn->connect_error);
 }
-
-// Proses form jika tombol Login ditekan
 if (isset($_POST['login'])) {
     $username = $_POST['username'];
     $password = $_POST['password'];
     $role = $_POST['role'];
+    if ($role == "admin" || $role == "pimpinan") {
+        $sql = "SELECT * FROM `tb_user` WHERE `username` = '$username' AND `level` = '$password' AND `level` = '$role'";
+        $resultadmin = $conn->query($sql);
+        if ($resultadmin->num_rows > 0) {
+            $admin_data = $resultadmin->fetch_assoc();
 
-    if ($role == "admin") {
-        $sql = "SELECT * FROM `tb_user` WHERE `username` = '$username' AND `level` = '$password' AND `level` = '$role'";
-        $result = $conn->query($sql);
-    } elseif ($role == "pimpinan") {
-        $sql = "SELECT * FROM `tb_user` WHERE `username` = '$username' AND `level` = '$password' AND `level` = '$role'";
-        $result = $conn->query($sql);
+            // Jika status "Dikonfirmasi", maka login berhasil
+            echo "<div class=\"alert alert-Success alert-dismissible fade show\" role=\"alert\">
+                    <strong>Login Berhasil!</strong>
+                    <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
+                        <span aria-hidden=\"true\">&times;</span>
+                    </button>
+                </div>";
+            login($_POST);
+        } else {
+            // Jika data tidak ditemukan, tampilkan pesan kesalahan
+            echo "<div style='margin-top : 16rem;' class=\"alert alert-warning alert-dismissible fade show fixed-top\" role=\"alert\">
+                <strong>Login Gagal!</strong> Cek Username, password serta pastikan sesuai dengan Role Anda.
+                <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
+                    <span aria-hidden=\"true\">&times;</span>
+                </button>
+            </div>";
+        }
     } elseif ($role == "supplier") {
         $sql = "SELECT * FROM `tb_supplier` WHERE `username` = '$username' AND `password` = '$password'";
-        $result = $conn->query($sql);
+        $result_sup = $conn->query($sql);
+        if ($result_sup->num_rows > 0) {
+            $sup_data = $result_sup->fetch_assoc();
+            echo "<div class=\"alert alert-Success alert-dismissible fade show\" role=\"alert\">
+                    <strong>Login Berhasil!</strong>
+                    <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
+                        <span aria-hidden=\"true\">&times;</span>
+                    </button>
+                </div>";
+            login($_POST);
+        } else {
+            echo "<div style='margin-top : 16rem;' class=\"alert alert-warning alert-dismissible fade show fixed-top\" role=\"alert\">
+                <strong>Login Gagal!</strong> Cek Username, password serta pastikan sesuai dengan Role Anda.
+                <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
+                    <span aria-hidden=\"true\">&times;</span>
+                </button>
+            </div>";
+        }
+
     } elseif ($role == "pelanggan") {
         $sql = "SELECT * FROM `tb_konsumen` WHERE `username` = '$username' AND `password` = '$password'";
         $result = $conn->query($sql);
-    };
-
     if ($result->num_rows > 0) {
-        // Jika data ditemukan, berarti login berhasil
-        echo "<div class=\"alert alert-Success alert-dismissible fade show\" role=\"alert\">
-        <strong>Login Berhasil!</strong>
-        <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
-          <span aria-hidden=\"true\">&times;</span>
-        </button>
-      </div>";
-        login($_POST);
-    } else {
-        // Jika data tidak ditemukan, berarti login gagal
-        echo "<div class=\"alert alert-warning alert-dismissible fade show fixed-top\" role=\"alert\">
-        <strong>Login Gagal!</strong> Cek Username, passwors serta pastikan Sesuai dengan Role Anda.
-        <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
-          <span aria-hidden=\"true\">&times;</span>
-        </button>
-      </div>";
+            $konsumen_data = $result->fetch_assoc();
+            if ($konsumen_data['status_reg'] == "Dikonfirmasi") {
+                // Jika status "Dikonfirmasi", maka login berhasil
+                echo "<div class=\"alert alert-Success alert-dismissible fade show\" role=\"alert\">
+                    <strong>Login Berhasil!</strong>
+                    <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
+                        <span aria-hidden=\"true\">&times;</span>
+                    </button>
+                </div>";
+                login($_POST);
+            } else {
+                // Jika status "Belum Dikonfirmasi", tampilkan pesan kesalahan
+                echo "<div style='margin-top : 16rem;' class=\"alert alert-warning alert-dismissible fade show fixed-top\" role=\"alert\">
+                    <strong>Login Gagal!</strong> Akun belum dikonfirmasi.
+                    <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
+                        <span aria-hidden=\"true\">&times;</span>
+                    </button>
+                </div>";
+            }
+        } else {
+            // Jika data tidak ditemukan, tampilkan pesan kesalahan
+            echo "<div style='margin-top : 16rem;' class=\"alert alert-warning alert-dismissible fade show fixed-top\" role=\"alert\">
+                <strong>Login Gagal!</strong> Cek Username, password serta pastikan sesuai dengan Role Anda.
+                <button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">
+                    <span aria-hidden=\"true\">&times;</span>
+                </button>
+            </div>";
     }
+}
 }
 ?>
 <!DOCTYPE html>
